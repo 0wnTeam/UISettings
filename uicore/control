@@ -1,0 +1,10 @@
+Package: com.qwerty.uicore
+Name: UICore
+Depends: 
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome library of some sort!!
+Maintainer: nothing2hide
+Author: nothing2hide
+Section: System
+Tag: role::developer
