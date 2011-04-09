@@ -1,5 +1,6 @@
 .DS_*
-.theos
+.DS_Store
+.theos/
 _
 theos
 *.deb
