@@ -1,9 +1,10 @@
 Package: com.qwertyoruiop.uisettingsDraft2
 Name: UISettingsDraft2
 Depends: mobilesubstrate
-Version: 1.0.1beta
+Version: 1.0.1beta-4
 Architecture: iphoneos-arm
 Description: An awesome MobileSubstrate tweak!
 Maintainer: nothing2hide
 Author: nothing2hide
 Section: Tweaks
+Installed-Size: 272

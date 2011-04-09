@@ -4,6 +4,19 @@
 #import <SpringBoard/SpringBoard.h>
 #include "substrate.h"
 #define kHookVer "0.2"
+static id msg=nil;
+%hook SBAppSwitcherBarView
++(id)alloc
+{
+msg=%orig;
+return msg;
+}
+%new(v@:)
++(id)mesg
+{
+return msg;
+}
+%end
 %hook SBNowPlayingBar
 static SBNowPlayingBar* sharedSelf = nil;
 %new(::)
@@ -98,6 +111,9 @@ static Hook* sHook=nil;
 	}
 	[triggerButton removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
 	[triggerButton addTarget:[UISettingsCore sharedSettings] action:@selector(hook:) forControlEvents:UIControlEventTouchUpInside];
+        id imageData = [NSData dataWithContentsOfFile:@"/Library/UISettings/Icons/uisettings.png"];
+        id image = [UIImage imageWithData:imageData];
+        [triggerButton setImage:image forState:UIControlStateNormal];
 	UILongPressGestureRecognizer *longPressGR;
 	longPressGR = [[ UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
 	longPressGR.delegate = self;
@@ -113,11 +129,9 @@ static Hook* sHook=nil;
 }
 @end
 
-
-
 // OldHookz
 %ctor {
-NSLog(@"UISettingsV2 - based on nothing");
+NSLog(@"UISettingsDraft2 - based on nothing");
 NSLog(@"(c) 2010 Maximus and qwertyoruiop");
 }
 %hook SBNowPlayingBarView
@@ -168,7 +182,7 @@ static SBNowPlayingBarMediaControlsView* containerSingleton = nil;
 	if(hook == nil) {
 		Class SBNowPlayingBarView = objc_getClass("SBNowPlayingBarView");		
 		UIButton* _orientationLockButton = MSHookIvar<UIButton*>([SBNowPlayingBarView sharedControlInstance], "_orientationLockButton");
-		[[Hook alloc] initWithButton:_orientationLockButton andView:(UIView*)[SBNowPlayingBarView sharedControlInstance] andIconLabel:MSHookIvar<SBIconLabel*>((UIView*)[SBNowPlayingBarView sharedControlInstance], "_orientationLabel")];
+		hook=[[Hook alloc] initWithButton:_orientationLockButton andView:(UIView*)[SBNowPlayingBarView sharedControlInstance] andIconLabel:MSHookIvar<SBIconLabel*>((UIView*)containerSingleton, "_orientationLabel")];
 	}
 	[hook hook];
 }

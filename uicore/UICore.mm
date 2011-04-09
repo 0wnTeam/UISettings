@@ -2,7 +2,11 @@
 #import <SpringBoard/SpringBoard.h>
 #include "substrate.h"
 #import "notify.h"
-
+@interface SBAppSwitcherBarView : UIView {
+}
++(id)mesg;
++(CGRect)_iconFrameForIndex:(unsigned)index withSize:(CGSize)size;
+@end
 @interface UIToggle : NSObject {
 	void* lib_handle;
 }
@@ -22,14 +26,15 @@
 	UIScrollView* toggleContainer;
 	NSMutableArray* toggleArray;
 	NSMutableArray* dispatcherArray;
+	UIWindow* toggleWindow;
 }
 + (UISettingsToggleController*)sharedController;
+-(void)load;
 -(CGRect)autoRect;
 -(UIButton*)createToggleWithAction:(SEL)action title:(NSString*)title target:(id)target;
 @end
-
+static UIButton* triggerButton;
 @interface UISettingsCore : NSObject {
-	UIButton* triggerButton;
 	UIView* contentView;
 	SBIconLabel* label;
 	NSMutableArray* toggles;
@@ -129,7 +134,7 @@ static NSMutableArray* kDylibList=nil;
 	myLabel.backgroundColor = [UIColor clearColor];
 	myLabel.font = [UIFont boldSystemFontOfSize:10.0];
 	myLabel.textColor = [UIColor whiteColor];
-	myLabel.textAlignment = UITextAlignmentCenter;	
+	myLabel.textAlignment = UITextAlignmentCenter;
 	[toggleContainer addSubview:myLabel];
 	if (state==0) {
 		[self creatr];
@@ -199,10 +204,18 @@ static UISettingsToggleController* sharedIInstance = nil;
     {
         if (sharedIInstance == nil) {
 			sharedIInstance = [[self alloc] init];
+			[sharedIInstance load];
 		}
     }
 	NSLog(@"StillAlive here");
     return sharedIInstance;
+}
+-(void)load
+{
+	toggleWindow=[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	toggleWindow.windowLevel = 99999;
+	toggleWindow.hidden = NO;
+	toggleWindow.userInteractionEnabled = NO;
 }
 #pragma mark coreDispatcher
 -(void)coreDispatcher:(UIButton*)sender {
@@ -259,8 +272,37 @@ static UISettingsToggleController* sharedIInstance = nil;
 	[toggleArray addObject:myButton];  
 	return myButton;
 }
+-(UILabel*)createLabelForButton:(UIButton*)button text:(NSString*)text
+{
+id hokr = [UISettingsCore sharedSettings];
+toggleContainer=MSHookIvar<UIScrollView*>(hokr, "toggleContainer"); // b00m
+UILabel *lbel = [ [UILabel alloc ] initWithFrame:CGRectMake(0.0, 0.0, 62.0, 24.0) ];
+lbel.textAlignment =  UITextAlignmentCenter;
+lbel.textColor = [UIColor whiteColor];
+lbel.backgroundColor = [UIColor clearColor];
+lbel.font = [UIFont boldSystemFontOfSize:(12.0)];
+[toggleContainer addSubview:lbel];
+CGPoint cer=button.center;
+cer.y+=(button.size.height/2)+6;
+lbel.center=cer;
+lbel.text = text;
+lbel.numberOfLines = 1;
+lbel.minimumFontSize=5.0;
+lbel.adjustsFontSizeToFitWidth=YES;
+return lbel;
+}
+-(void)createToggleWithTitle:(NSString*)title andImage:(NSString*)path andSelector:(SEL)selector toTarget:(id)target
+{
+NSAutoreleasePool* apool=[NSAutoreleasePool new];
+id button=[self createToggleWithAction:selector title:nil target:target];
+[self createLabelForButton:button text:title];
+NSData *imageData = [NSData dataWithContentsOfFile:path];
+UIImage *image = [UIImage imageWithData:imageData];
+[button setImage:image forState:UIControlStateNormal];
+[apool drain];
+}
 -(CGRect)autoRect {
 	toggleContainer.contentSize = CGSizeMake((20+56)*([toggleArray count]+1)+22, toggleContainer.frame.size.height);
-	return CGRectMake((20+56)*([toggleArray count])+22, 16, 56, 56);
+	return CGRectMake((20+56)*([toggleArray count])+22, 14, [objc_getClass("SBIcon") defaultIconImageSize].width, [objc_getClass("SBIcon") defaultIconImageSize].height);
 }
 @end
