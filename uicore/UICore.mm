@@ -109,11 +109,14 @@ static NSMutableArray* kDylibList=nil;
 	state=2;
 }
 -(void) redraw {
+	NSLog(@"redraw");
 	for (UIView* view in viewsInOriginalMenu) {
 		[view setHidden:YES];
 	}
+	NSLog(@"redraw1");
 	notify_post("com.qwerty.uisettings.reload");
 	[toggleContainer setHidden:NO];
+	NSLog(@"redraw2");
 	state=1;
 	
 }
@@ -150,7 +153,17 @@ static NSMutableArray* kDylibList=nil;
 }
 -(void)hook:(id)sender {
 	if ([self doIhazToggles]==YES) {
-		[self performSelectorInBackground:@selector(hookInBackground) withObject:nil];
+		/*
+		 * FAST_ALPHA - Multithreaded, non-locking dylib loader.
+		 * There are known bugs for it w/ the new dynamic image patch
+		 * If you want to use it, #define FAST_ALPHA 1
+		 * FIXME: FIX CRASHES
+		 */
+		#ifdef FAST_ALPHA
+			[self performSelectorInBackground:@selector(hookInBackground) withObject:nil];
+		#else
+			[self performSelector:@selector(hookInBackground) withObject:nil];
+		#endif
 	}  else {
 		[[[UIAlertView alloc] initWithTitle:@"UISettings - Simple Settings System in SpringBoard" message:@"Hello. You don't have any toggle. UISettings needs some toggles. Go grab them on Cydia." delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] show];
 	}
@@ -236,7 +249,8 @@ static UISettingsToggleController* sharedIInstance = nil;
 	}	
 }
 #pragma mark AddStuff
--(UIButton*)createToggleWithAction:(SEL)action title:(NSString*)title target:(id)target { // FIXME: correct this shit
+-(UIButton*)createToggleWithAction:(SEL)action title:(NSString*)title target:(id)target {
+	// FIXME: correct this shit
 	id hokr = [UISettingsCore sharedSettings];
 	toggleContainer=MSHookIvar<UIScrollView*>(hokr, "toggleContainer"); // b00m
 	if(!toggleContainer)
@@ -274,32 +288,32 @@ static UISettingsToggleController* sharedIInstance = nil;
 }
 -(UILabel*)createLabelForButton:(UIButton*)button text:(NSString*)text
 {
-id hokr = [UISettingsCore sharedSettings];
-toggleContainer=MSHookIvar<UIScrollView*>(hokr, "toggleContainer"); // b00m
-UILabel *lbel = [ [UILabel alloc ] initWithFrame:CGRectMake(0.0, 0.0, 62.0, 24.0) ];
-lbel.textAlignment =  UITextAlignmentCenter;
-lbel.textColor = [UIColor whiteColor];
-lbel.backgroundColor = [UIColor clearColor];
-lbel.font = [UIFont boldSystemFontOfSize:(12.0)];
-[toggleContainer addSubview:lbel];
-CGPoint cer=button.center;
-cer.y+=(button.size.height/2)+6;
-lbel.center=cer;
-lbel.text = text;
-lbel.numberOfLines = 1;
-lbel.minimumFontSize=5.0;
-lbel.adjustsFontSizeToFitWidth=YES;
-return lbel;
+	id hokr = [UISettingsCore sharedSettings];
+	toggleContainer=MSHookIvar<UIScrollView*>(hokr, "toggleContainer"); // b00m
+	UILabel *lbel = [ [UILabel alloc ] initWithFrame:CGRectMake(0.0, 0.0, 62.0, 24.0) ];
+	lbel.textAlignment =  UITextAlignmentCenter;
+	lbel.textColor = [UIColor whiteColor];
+	lbel.backgroundColor = [UIColor clearColor];
+	lbel.font = [UIFont boldSystemFontOfSize:(12.0)];
+	[toggleContainer addSubview:lbel];
+	CGPoint cer=button.center;
+	cer.y+=(button.size.height/2)+6;
+	lbel.center=cer;
+	lbel.text = text;
+	lbel.numberOfLines = 1;
+	lbel.minimumFontSize=5.0;
+	lbel.adjustsFontSizeToFitWidth=YES;
+	return lbel;
 }
 -(void)createToggleWithTitle:(NSString*)title andImage:(NSString*)path andSelector:(SEL)selector toTarget:(id)target
 {
-NSAutoreleasePool* apool=[NSAutoreleasePool new];
-id button=[self createToggleWithAction:selector title:nil target:target];
-[self createLabelForButton:button text:title];
-NSData *imageData = [NSData dataWithContentsOfFile:path];
-UIImage *image = [UIImage imageWithData:imageData];
-[button setImage:image forState:UIControlStateNormal];
-[apool drain];
+	NSAutoreleasePool* apool=[NSAutoreleasePool new];
+	id button=[self createToggleWithAction:selector title:nil target:target];
+	[self createLabelForButton:button text:title];
+	NSData *imageData = [NSData dataWithContentsOfFile:path];
+	UIImage *image = [UIImage imageWithData:imageData];
+	[button setImage:image forState:UIControlStateNormal];
+	[apool drain];
 }
 -(CGRect)autoRect {
 	toggleContainer.contentSize = CGSizeMake((20+56)*([toggleArray count]+1)+22, toggleContainer.frame.size.height);

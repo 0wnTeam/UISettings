@@ -1,4 +1,4 @@
-include theos/makefiles/common.mk
+include ../theos/makefiles/common.mk
 LOCAL_INSTALL_PATH = /Library/UISettings/
 LIBRARY_NAME = UIToggles
 UIToggles_FILES = UIToggles.xm

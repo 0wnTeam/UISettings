@@ -1,4 +1,4 @@
 #!/bin/sh
-/bin/launchctl unload  /System/Library/LaunchDaemons/com.qwertyoruiop.uisettingsd || :
-/bin/launchctl load  /System/Library/LaunchDaemons/com.qwertyoruiop.uisettingsd
+/bin/launchctl unload  /System/Library/LaunchDaemons/com.qwertyoruiop.uisettingsd.plist || :
+/bin/launchctl load  /System/Library/LaunchDaemons/com.qwertyoruiop.uisettingsd.plist
 :
